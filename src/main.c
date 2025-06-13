@@ -24,7 +24,9 @@ int main(int argc, char* argv[]) {
 
     // Load image
     image_t original = load_image(file_path);
-    image_t resized = make_resized(&original, max_width, max_height);
+
+    double character_ratio = 2.0;
+    image_t resized = make_resized(&original, max_width, max_height, character_ratio);
     
     print_image(&resized);
 

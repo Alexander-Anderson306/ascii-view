@@ -86,16 +86,16 @@ void get_average(image_t* image, double* average, size_t x1, size_t x2, size_t y
 }
 
 
-image_t make_resized(image_t* original, size_t max_width, size_t max_height) {
+image_t make_resized(image_t* original, size_t max_width, size_t max_height, double character_ratio) {
     size_t width, height;
     size_t channels = original->channels;
 
     // Note: Dividing heights by 2 for approximate terminal font aspect ratio
-    size_t proposed_height = (original->height * max_width) / (2 * original->width);
+    size_t proposed_height = (original->height * max_width) / (character_ratio * original->width);
     if (proposed_height <= max_height) {
         width = max_width, height = proposed_height;
     } else {
-        width = (2 * original->width * max_height) / (original->height);
+        width = (character_ratio * original->width * max_height) / (original->height);
         height = max_height;
     }
 
