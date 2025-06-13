@@ -16,6 +16,11 @@
 #define CYN "\x1B[36m"
 #define WHT "\x1B[37m"
 
+typedef struct {
+    double hue;
+    double saturation;
+    double value;
+} hsv_t;
 
 double* get_max(double* a, double* b, double* c) {
     if ((*a >= *b) && (*a >= *c)) {
@@ -28,7 +33,7 @@ double* get_max(double* a, double* b, double* c) {
 }
 
 double* get_min(double* a, double* b, double* c) {
-        if ((*a <= *b) && (*a <= *c)) {
+    if ((*a <= *b) && (*a <= *c)) {
         return a;
     } else if (*b <= *c) {
         return b;
@@ -37,76 +42,95 @@ double* get_min(double* a, double* b, double* c) {
     }
 }
 
+hsv_t rgb_to_hsv(double red, double green, double blue) {
+    hsv_t hsv;
+    
+    double* max = get_max(&red, &green, &blue);
+    double* min = get_min(&red, &green, &blue);
+    
+    hsv.value = *max;
+    double chroma = hsv.value - *min;
+    
+    // Calculate saturation
+    if (fabs(hsv.value) < 1e-4) {
+        hsv.saturation = 0.0;
+    } else {
+        hsv.saturation = chroma / hsv.value;
+    }
+    
+    // Calculate hue
+    if (chroma < 1e-4) {
+        hsv.hue = 0.0;
+    } else if (max == &red) {
+        hsv.hue = 60.0 * fmod((green - blue) / chroma, 6.0);
+        if (hsv.hue < 0.0) hsv.hue += 360.0;
+    } else if (max == &green) {
+        hsv.hue = 60.0 * (2.0 + (blue - red) / chroma);
+    } else {
+        hsv.hue = 60.0 * (4.0 + (red - green) / chroma);
+    }
+    
+    return hsv;
+}
+
+const char* get_color_code(const hsv_t* hsv) {
+    if (hsv->saturation < 0.25) {
+        return WHT;
+    }
+    
+    if (hsv->hue >= 30.0 && hsv->hue < 90.0) {
+        return YEL;
+    } else if (hsv->hue >= 90.0 && hsv->hue < 150.0) {
+        return GRN;
+    } else if (hsv->hue >= 150.0 && hsv->hue < 210.0) {
+        return CYN;
+    } else if (hsv->hue >= 210.0 && hsv->hue < 270.0) {
+        return BLU;
+    } else if (hsv->hue >= 270.0 && hsv->hue < 330.0) {
+        return MAG;
+    } else {
+        return RED;
+    }
+}
+
+double calculate_grayscale_from_hsv(const hsv_t* hsv) {
+    // Use value * value for increased contrast
+    return hsv->value * hsv->value;
+}
+
+char get_ascii_char(double grayscale) {
+    size_t index = (size_t) (grayscale * N_VALUES);
+
+    // Clamp
+    if (index >= N_VALUES) {
+        index = N_VALUES - 1;
+    }
+
+    return VALUE_CHARS[index];
+}
 
 void print_image(image_t* image) {
     for (size_t y = 0; y < image->height; y++) {
         for (size_t x = 0; x < image->width; x++) {
             double* pixel = get_pixel(image, x, y);
             double grayscale;
-
+            
             if (image->channels <= 2) {
-                // Grayscale
+                // Grayscale image
                 grayscale = pixel[0];
             } else {
-                // RGB
-                double red = pixel[0];
-                double green = pixel[1];
-                double blue = pixel[2];
+                // RGB image
+                hsv_t hsv = rgb_to_hsv(pixel[0], pixel[1], pixel[2]);
                 
-                double* max = get_max(&red, &green, &blue);
-                double value = *max;
-                double chroma = value - *get_min(&red, &green, &blue);
+                const char* color = get_color_code(&hsv);
+                printf("%s", color);
                 
-                double saturation;
-                if (fabs(value) < 1e-4) {
-                    saturation = 0.0;
-                } else {
-                    saturation = chroma / value;
-                }
-
-                if (saturation < 0.25) {
-                    printf(WHT);
-                } else {
-                    double hue;
-                    if (max == &red) {
-                        hue = 60.0 * fmod((green - blue) / chroma, 6.0);
-                        if (hue < 0.0) hue += 360.0;
-                    } else if (max == &green) {
-                        hue = 60.0 * (2.0 + (blue - red)/chroma);
-                    } else {
-                        hue = 60.0 * (4.0 + (red - green)/chroma);
-                    }
-
-                    if (hue >= 30.0 && hue < 90.0) {
-                        printf(YEL);
-                    } else if (hue >= 90.0 && hue < 150.0) {
-                        printf(GRN);
-                    } else if (hue >= 150.0 && hue < 210.0) {
-                        printf(CYN);
-                    } else if (hue >= 210.0 && hue < 270.0) {
-                        printf(BLU);
-                    } else if (hue >= 270.0 && hue < 330.0) {
-                        printf(MAG);
-                    } else {
-                        printf(RED);
-                    }
-                }
-
-                grayscale = value * value;
-
-                // grayscale = red + green + blue + chroma - 2 * value; // median
-
-                // double value_3 = value * value * value;
-                // double value_4 = value_3 * value;
-                // double value_5 = value_4 * value;
-                // grayscale = 6.0 * value_5 - 15.0 * value_4 + 10.0 * value_3;
+                grayscale = calculate_grayscale_from_hsv(&hsv);
             }
-
-            size_t rounded_grayscale = grayscale * N_VALUES;
-            putchar(VALUE_CHARS[rounded_grayscale]);
+            
+            char ascii_char = get_ascii_char(grayscale);
+            putchar(ascii_char);
         }
-
         printf("\n");
     }
 }
-
