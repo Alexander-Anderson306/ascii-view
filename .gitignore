@@ -53,7 +53,7 @@ Mkfile.old
 dkms.conf
 
 # Mac
-*.DS_Store
+.DS_Store
 
 # VSCode
 .vscode
