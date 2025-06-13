@@ -7,15 +7,22 @@ image_t load_image(const char* file_path) {
     int width, height, channels;
     unsigned char* raw_data = stbi_load(file_path, &width, &height, &channels, 0);
 
+    if (!raw_data) {
+        fprintf(stderr, "Error: Failed to load image '%s': %s!\n", file_path, stbi_failure_reason());
+        return (image_t) {0}; // Return empty image on failure
+    }
+
     // Convert to [0., 1.]
-    double* data = calloc(width * height * channels, sizeof(*data));
-    for (int x = 0; x < width; x++) {
-        for (int y = 0; y < height; y++) {
-            for (int c = 0; c < channels; c++) {
-                int index = (y * width + x) * channels + c;
-                data[index] = ((double) raw_data[index]) / (255.0);
-            }
-        }
+    size_t total_size = (size_t) width * height * channels;
+    double* data = calloc(total_size, sizeof(*data));
+    if (!data) {
+        fprintf(stderr, "Error: Failed to allocate memory for image data!\n");
+        stbi_image_free(raw_data);
+        return (image_t) {0}; // Return empty image on failure
+    }
+
+    for (size_t i = 0; i < total_size; i++) {
+        data[i] = raw_data[i] / 255.0;
     }
 
     stbi_image_free(raw_data);
@@ -29,13 +36,24 @@ image_t load_image(const char* file_path) {
 }
 
 
+// Don't need this function but adding it in case...
+void free_image(image_t* image) {
+    if (image && image->data) {
+        free(image->data);
+        image->data = NULL;
+        image->width = image->height = image->channels = 0;
+    }
+}
+
+
 // Gets pointer to pixel data at index (x, y)
 double* get_pixel(image_t* image, size_t x, size_t y) {
     return &image->data[(y * image->width + x) * image->channels];
 }
 
+
 // Sets pixel channel values to those of new_pixel
-void set_pixel(image_t* image, size_t x, size_t y, double* new_pixel) {
+void set_pixel(image_t* image, size_t x, size_t y, const double* new_pixel) {
     double* pixel = get_pixel(image, x, y);
     for (size_t c = 0; c < image->channels; c++) {
         pixel[c] = new_pixel[c];
@@ -82,7 +100,12 @@ image_t make_resized(image_t* original, size_t max_width, size_t max_height) {
     }
 
     double* data = calloc(width * height * channels, sizeof(*data));
+    if (!data) {
+        fprintf(stderr, "Error: Failed to allocate memory for resized image!\n");
+        return (image_t) {0};
+    }
 
+    // i, j are coordinates in resized image
     for (size_t i = 0; i < width; i++) {
         size_t x1 = (i * original->width) / (width);
         size_t x2 = ((i + 1) * original->width) / (width);
