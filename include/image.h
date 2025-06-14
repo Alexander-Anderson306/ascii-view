@@ -15,5 +15,6 @@ image_t make_resized(image_t* original, size_t max_width, size_t max_height, dou
 double* get_pixel(image_t* image, size_t x, size_t y);
 void set_pixel(image_t* image, size_t x, size_t y, const double* new_pixel);
 
-// void print_image(image_t* image, bool dark_mode);
+void get_convolution(image_t* image, double* kernel, double* out);
+
 #endif
