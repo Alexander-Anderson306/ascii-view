@@ -28,6 +28,25 @@ int main(int argc, char* argv[]) {
     double character_ratio = 2.0;
     image_t resized = make_resized(&original, max_width, max_height, character_ratio);
     
+    double Gx[] = {-1., 0., 1., -2., 0., 2., -1., 0., 1};
+    double* convolution = calloc(resized.width * resized.height * resized.channels, sizeof(*convolution));
+    get_convolution(&resized, Gx, convolution);
+
+    for (size_t c = 0; c < resized.channels; c++) {
+        for (size_t y = 0; y < resized.height; y++) {
+            for (size_t x = 0; x < resized.width; x++) {
+                size_t index = c + resized.channels * (x + resized.width * y);
+                if (convolution[index] > 0.5)
+                    printf("+");
+                else if (convolution[index] < -0.5)
+                    printf("-");
+                else
+                    printf(" ");
+            }
+            printf("\n");
+        }
+    }
+
     print_image(&resized);
 
     return 0;

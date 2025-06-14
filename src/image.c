@@ -124,3 +124,32 @@ image_t make_resized(image_t* original, size_t max_width, size_t max_height, dou
         .data = data
     };
 }
+
+
+double calculate_convolution_value(image_t* image, double* kernel, size_t x, size_t y, size_t c) {
+    double result = 0.0;
+
+    for (int i = -1; i < 2; i++) {
+        for (int j = -1; j < 2; j++) {
+            size_t image_index = c + ((x + i) + (y + j) * image->width) * image->channels;
+            size_t kernel_index = (i + 1) + (j + 1) * 3;
+
+            result += kernel[kernel_index] * image->data[image_index];
+        }
+    }
+
+    return result;
+}
+
+
+// Calculates convolution with 3x3 kernel. Ignores edges.
+void get_convolution(image_t* image, double* kernel, double* out) {
+    for (size_t y = 1; y < image->height - 1; y++) {
+        for (size_t x = 1; x < image->width - 1; x++) {
+            for (size_t c = 0; c < image->channels; c++) {
+                size_t image_index = c + (x + y * image->width) * image->channels;
+                out[image_index] = calculate_convolution_value(image, kernel, x, y, c);
+            }
+        }
+    }
+}
