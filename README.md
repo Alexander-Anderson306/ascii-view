@@ -2,6 +2,10 @@
 
 A command-line tool that displays images as colorized ASCII art on the terminal.
 
+![Cover photo](./cover-photos/coverphoto-1.jpg)
+
+![Cover photo](./cover-photos/coverphoto-2.jpg)
+
 ## Features
 - **Multi-format support**: Supports JPEG, PNG, BMP, TGA, and other common image formats via [stb_image](https://github.com/nothings/stb)
 - **Color terminal output**: Uses ANSI color codes for colours
@@ -29,10 +33,8 @@ Requirements:
 
 ## Usage
 
-> 💡 Pro tip: If you squint your eyes, the images look great!
-
 ```bash
-./ascii-view [path/to/image] [max_width] [max_height]
+./ascii-view [path/to/image] [max_width (default 64)] [max_height (default 48)]
 ```
 
 ### Parameters
@@ -52,6 +54,11 @@ Requirements:
 ```
 
 The images in the `examples` directory are via [Unsplash](https://unsplash.com)
+
+### Suggestions for getting good looking results
+1. If you make your font size smaller, you can make the pictures larger
+2. The results are limited by your terminal's colour scheme
+3. If you squint your eyes the images look great!
 
 ## How It Works
 
