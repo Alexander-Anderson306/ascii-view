@@ -3,11 +3,11 @@
 A command-line tool that displays images as colorized ASCII art on the terminal.
 
 ## Features
-- **Multi-format support**: Supports JPEG, PNG, BMP, TGA, and other common image formats via [stb_image](https://github.com/nothings/stb)
+- **Multi-format support**: Supports JPEG, PNG, BMP, and other common image formats via [stb_image](https://github.com/nothings/stb)
 - **Color terminal output**: Uses ANSI color codes for colours
 - **Intelligent resizing**: Scales images to fit constrained dimensions while maintaining aspect ratio
 - **Terminal-optimized**: Adjusts for typical terminal font aspect ratios (characters are taller than they are wide)
-- **Efficient processing**: Uses area averaging for smooth downsampling
+- **Edge enhancement**: Uses Sobel filtering to enhance edges
 
 ## Building
 
@@ -25,21 +25,19 @@ make clean
 Requirements:
 - C99-compatible compiler (GCC, Clang)
 - Make build system
-- Math library (typically linked automatically, but sometimes requires a `-lm` flag)
 
 ## Usage
 
-> 💡 Pro tip: If you squint your eyes, the images look great!
-
 ```bash
-./ascii-view [path/to/image] [max_width] [max_height]
+./ascii-view <path/to/image> [OPTIONS]
 ```
 
-### Parameters
+### Options
 
-- `path/to/image`: Path to the input image file (required)
-- `max_width`: Maximum width in characters (default: 64)
-- `max_height`: Maximum height in characters (default: 48)
+- `-mw <width>`: Maximum width in characters (default: 64)
+- `-mh <height>`: Maximum height in characters (default: 48)
+- `-et <threshold>`: Edge detection threshold, range: 0.0 - 4.0 (default 4.0, disabled)
+- `-cr <ratio>`: Height-to-width ratio for characters (default 2.0)
 
 ### Examples
 
@@ -48,7 +46,13 @@ Requirements:
 ./ascii-view examples/puffin.jpg
 
 # Specify custom dimensions
-./ascii-view examples/contrast.jpg 120 60
+./ascii-view examples/contrast.jpg -mw 120 -mh 60
+
+# Specify edge threshold
+./ascii-view examples/black-and-white.jpg -et 2.5
+
+# Specify character aspect ratio
+./ascii-view examples/black-and-white.jpg -cr 1.7
 ```
 
 The images in the `examples` directory are via [Unsplash](https://unsplash.com)
@@ -63,5 +67,6 @@ The images in the `examples` directory are via [Unsplash](https://unsplash.com)
    - **Saturation**: Low saturation pixels display as white
    - **Value**: Used to calculate brightness for ASCII character selection
 5. **ASCII mapping**: Maps brightness levels to ASCII characters: ` .-=+*x#$&X@`
+6. **Edge enhancement**: Finds edges and angles with a Sobel filter, enhances edges with `_/|\`
 
 [^1]: Some terminals support the ability to extract the exact font ratio, but others don't. For the time being we assume a 2:1 ratio.
