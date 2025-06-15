@@ -1,6 +1,12 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #define STB_IMAGE_IMPLEMENTATION
 #include "../include/stb_image.h"
+#pragma GCC diagnostic pop
+
 #include "../include/image.h"
+
+
 
 
 image_t load_image(const char* file_path) {
