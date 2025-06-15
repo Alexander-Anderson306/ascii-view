@@ -18,7 +18,7 @@ void print_help(char* exec_alias) {
     printf("OPTIONS:\n");
     printf("\t-mw <width>\t\tMaximum width in characters (default: %d)\n", DEFAULT_MAX_WIDTH);
     printf("\t-mh <height>\t\tMaximum height in characters (default: %d)\n", DEFAULT_MAX_HEIGHT);
-    printf("\t-et <threshold>\t\tEdge detection threshold, range: 0 - 4 (default: %.1f, disabled)\n", DEFAULT_EDGE_THRESHOLD);
+    printf("\t-et <threshold>\t\tEdge detection threshold, range: 0.0 - 4.0 (default: %.1f, disabled)\n", DEFAULT_EDGE_THRESHOLD);
     printf("\t-cr <ratio>\t\tHeight-to-width ratio for characters (default: %.1f)\n", DEFAULT_CHARACTER_RATIO);
 }
 
