@@ -14,9 +14,12 @@ A command-line tool that displays images as colorized ASCII art on the terminal.
 ## Building
 
 This project can be built with Make:
-
 ```bash
+# Development version
 make
+
+# Release version compiled with optimizations
+make release
 ```
 
 To clean build artifacts:
