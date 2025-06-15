@@ -126,11 +126,45 @@ image_t make_resized(image_t* original, size_t max_width, size_t max_height, dou
 }
 
 
+// Create grayscale version of image. Note: Assumes original is at least RGB.
+image_t make_grayscale(image_t* original) {
+    size_t width = original->width;
+    size_t height = original->height;
+    size_t channels = 1;
+
+    double* data = calloc(width * height, sizeof(*data));
+    if (!data) {
+        fprintf(stderr, "Error: Failed to allocate memory for resized image!\n");
+        return (image_t) {0};
+    }
+
+    image_t new = {
+        .width = width,
+        .height = height,
+        .channels = channels,
+        .data = data
+    };
+
+    for (size_t y = 0; y < height; y++) {
+        for (size_t x = 0; x < width; x++) {
+            double* pixel = get_pixel(original, x, y);
+            
+            // Luminance-weighted graycsale. Could be a callback...
+            double grayscale = 0.2126 * pixel[0] + 0.7152 * pixel[1] + 0.0722 * pixel[2];
+
+            set_pixel(&new, x, y, &grayscale);
+        }
+    }
+
+    return new;
+}
+
+
 double calculate_convolution_value(image_t* image, double* kernel, size_t x, size_t y, size_t c) {
     double result = 0.0;
 
-    for (int i = -1; i < 2; i++) {
-        for (int j = -1; j < 2; j++) {
+    for (int j = -1; j < 2; j++) {
+        for (int i = -1; i < 2; i++) {
             size_t image_index = c + ((x + i) + (y + j) * image->width) * image->channels;
             size_t kernel_index = (i + 1) + (j + 1) * 3;
 
@@ -152,4 +186,14 @@ void get_convolution(image_t* image, double* kernel, double* out) {
             }
         }
     }
+}
+
+
+// Calculates sobel convolutions
+void get_sobel(image_t* image, double* out_x, double* out_y) {
+    double Gx[] = {-1., 0., 1., -2., 0., 2., -1., 0., 1};
+    double Gy[] = {1., 2., 1., 0., 0., 0., -1., -2., -1};
+
+    get_convolution(image, Gx, out_x);
+    get_convolution(image, Gy, out_y);
 }
