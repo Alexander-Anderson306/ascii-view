@@ -1,12 +1,12 @@
 # ASCII View
 
-A command-line tool that displays images as colorized ASCII art on the terminal.
+A command-line tool that displays images as colorized ASCII art in the terminal.
 
 ![Cover photo](./cover-photos/coverphoto-1.jpg)
 
 ## Features
 - **Multi-format support**: Supports JPEG, PNG, BMP, and other common image formats via [stb_image](https://github.com/nothings/stb)
-- **Color terminal output**: Uses ANSI color codes for colours
+- **Color terminal output**: Uses ANSI color codes for colors
 - **Intelligent resizing**: Scales images to fit constrained dimensions while maintaining aspect ratio
 - **Terminal-optimized**: Adjusts for typical terminal font aspect ratios (characters are taller than they are wide)
 - **Edge enhancement**: Uses Sobel filtering to enhance edges
