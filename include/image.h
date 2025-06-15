@@ -9,6 +9,7 @@ typedef struct {
 } image_t;
 
 image_t load_image(const char* file_path);
+void free_image(image_t* image);
 
 image_t make_resized(image_t* original, size_t max_width, size_t max_height, double character_ratio);
 

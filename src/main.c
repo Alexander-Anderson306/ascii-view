@@ -22,6 +22,9 @@ int main(int argc, char* argv[]) {
         return 1;
     
     print_image(&resized, args.edge_threshold);
+    
+    free_image(&original);
+    free_image(&resized);
 
     return 0;
 }

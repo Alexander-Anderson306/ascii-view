@@ -36,7 +36,6 @@ image_t load_image(const char* file_path) {
 }
 
 
-// Don't need this function but adding it in case...
 void free_image(image_t* image) {
     if (image && image->data) {
         free(image->data);
