@@ -179,6 +179,8 @@ void print_image(image_t* image, double edge_threshold) {
     }
 
     printf("%s", RESET);
+    
     free(sobel_x);
     free(sobel_y);
+    free_image(&grayscale);
 }
