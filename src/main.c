@@ -7,11 +7,9 @@
 
 int main(int argc, char* argv[]) {
     args_t args = parse_args(argc, argv);
-
-    // Load image
     if (args.file_path == NULL)
         return 1;
-    
+
     image_t original = load_image(args.file_path);
     image_t resized = make_resized(&original, args.max_width, args.max_height, args.character_ratio);
     
