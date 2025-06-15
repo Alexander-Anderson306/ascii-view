@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+
 #include "../include/argparse.h"
 
 #define DEFAULT_MAX_WIDTH 64
@@ -23,7 +26,26 @@ void print_help(char* exec_alias) {
 }
 
 
+// Get size of terminal in characters. Returns 1 if successful.
+int try_get_terminal_size(size_t* width, size_t* height) {
+    struct winsize ws;
+
+    // Abort if not terminal
+    if (!isatty(0))
+        return 0;
+    
+    if (ioctl(0, TIOCGWINSZ, &ws) == 0) {
+        *width = (size_t) ws.ws_col;
+        *height = (size_t) ws.ws_row;
+        return 1;
+    }
+
+    return 0;
+}
+
+
 args_t parse_args(int argc, char* argv[]) {
+    // Get variable defaults
     args_t args = {
         .file_path = NULL,
         .max_width = DEFAULT_MAX_WIDTH,
@@ -32,6 +54,9 @@ args_t parse_args(int argc, char* argv[]) {
         .edge_threshold = DEFAULT_EDGE_THRESHOLD,
     };
 
+    try_get_terminal_size(&args.max_width, &args.max_height);
+
+    // If no file given
     if (argc == 1) {
         print_help(argv[0]);
         return args;
