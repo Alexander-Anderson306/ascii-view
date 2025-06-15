@@ -69,8 +69,8 @@ void get_average(image_t* image, double* average, size_t x1, size_t x2, size_t y
     }
     
     // Get total
-    for (size_t x = x1; x < x2; x++) {
-        for (size_t y = y1; y < y2; y++) {
+    for (size_t y = y1; y < y2; y++) {
+        for (size_t x = x1; x < x2; x++) {
             double* pixel = get_pixel(image, x, y);
             for (size_t c = 0; c < image->channels; c++) {
                 average[c] += pixel[c];
@@ -106,13 +106,13 @@ image_t make_resized(image_t* original, size_t max_width, size_t max_height, dou
     }
 
     // i, j are coordinates in resized image
-    for (size_t i = 0; i < width; i++) {
-        size_t x1 = (i * original->width) / (width);
-        size_t x2 = ((i + 1) * original->width) / (width);
-        for (size_t j = 0; j < height; j++) {
-            size_t y1 = (j * original->height) / (height);
-            size_t y2 = ((j + 1) * original->height) / (height);
-
+    for (size_t j = 0; j < height; j++) {
+        size_t y1 = (j * original->height) / (height);
+        size_t y2 = ((j + 1) * original->height) / (height);
+        for (size_t i = 0; i < width; i++) {
+            size_t x1 = (i * original->width) / (width);
+            size_t x2 = ((i + 1) * original->width) / (width);
+        
             get_average(original, &data[(i + j * width) * channels], x1, x2, y1, y2);
         }
     }
