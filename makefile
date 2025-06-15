@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -Iinclude
+CFLAGS = -Wall -Wextra -Wpedantic -std=c99 -Iinclude
 SRCDIR = src
 SOURCES = $(wildcard $(SRCDIR)/*.c)
 OBJECTS = $(SOURCES:.c=.o)
@@ -9,7 +9,7 @@ $(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(TARGET)
 
 # Release build with optimization
-release: CFLAGS += -O3
+release: CFLAGS += -O3 -flto -march=native
 release: clean $(TARGET)
 
 %.o: %.c
