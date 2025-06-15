@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "../include/image.h"
 #include "../include/print_image.h"
 #include "../include/argparse.h"
