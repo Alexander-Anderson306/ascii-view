@@ -48,13 +48,13 @@ Requirements:
 ./ascii-view examples/puffin.jpg
 
 # Specify custom dimensions
-./ascii-view examples/contrast.jpg -mw 120 -mh 60
+./ascii-view examples/waterfall.jpg -mw 120 -mh 60
 
 # Specify edge threshold
 ./ascii-view examples/black-and-white.jpg -et 2.5
 
 # Specify character aspect ratio
-./ascii-view examples/black-and-white.jpg -cr 1.7
+./ascii-view examples/cacti.jpg -cr 1.7
 ```
 
 The images in the `examples` directory are via [Unsplash](https://unsplash.com)
