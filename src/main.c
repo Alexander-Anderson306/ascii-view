@@ -2,33 +2,20 @@
 #include <stdlib.h>
 #include "../include/image.h"
 #include "../include/print_image.h"
-
-#define DEFAULT_MAX_WIDTH 64
-#define DEFAULT_MAX_HEIGHT 48
+#include "../include/argparse.h"
 
 
 int main(int argc, char* argv[]) {
-    // Parse arguments
-    if (argc == 1) {
-        printf(
-            "Usage: %s [path/to/image] [max width (default %d)] [max height (default %d)]\n",
-            argv[0], DEFAULT_MAX_WIDTH, DEFAULT_MAX_HEIGHT
-        );
-        return 1;
-    }
-
-    char* file_path = argv[1];
-    size_t max_width = DEFAULT_MAX_WIDTH, max_height = DEFAULT_MAX_HEIGHT;
-    if (argc >= 3) max_width = (size_t) atoi(argv[2]);
-    if (argc >= 4) max_height = (size_t) atoi(argv[3]);
+    args_t args = parse_args(argc, argv);
 
     // Load image
-    image_t original = load_image(file_path);
-
-    double character_ratio = 2.0;
-    image_t resized = make_resized(&original, max_width, max_height, character_ratio);
+    if (args.file_path == NULL)
+        return 1;
     
-    print_image(&resized);
+    image_t original = load_image(args.file_path);
+    image_t resized = make_resized(&original, args.max_width, args.max_height, args.character_ratio);
+    
+    print_image(&resized, args.edge_threshold);
 
     return 0;
 }
