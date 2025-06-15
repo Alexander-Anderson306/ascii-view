@@ -120,11 +120,11 @@ char get_sobel_angle_char(double sobel_angle) {
     if ((22.5 <= sobel_angle && sobel_angle <= 67.5) || (-157.5 <= sobel_angle && sobel_angle <= -112.5))
         return '\\';
     else if ((67.5 <= sobel_angle && sobel_angle <= 112.5) || (-112.5 <= sobel_angle && sobel_angle <= -67.5))
-        return '|';
+        return '_';
     else if ((112.5 <= sobel_angle && sobel_angle <= 157.5) || (-67.5 <= sobel_angle && sobel_angle <= -22.5))
         return '/';
     else
-        return '_';
+        return '|';
 }
 
 
@@ -143,7 +143,7 @@ void print_image(image_t* image) {
             double sy = sobel_y[index];
 
             double square_sobel_magnitude = sx * sx + sy * sy;
-            double sobel_angle = atan2(sx, sy) * 180. / M_PI;
+            double sobel_angle = atan2(sy, sx) * 180. / M_PI;
 
             char ascii_char;
             char* color = WHT;
