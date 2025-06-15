@@ -15,6 +15,7 @@
 #define MAG "\x1B[35m"
 #define CYN "\x1B[36m"
 #define WHT "\x1B[37m"
+#define RESET "\x1b[0m"
 
 
 typedef struct {
@@ -132,7 +133,11 @@ void print_image(image_t* image, double edge_threshold) {
     image_t grayscale = make_grayscale(image);
     double* sobel_x = calloc(grayscale.width * grayscale.height, sizeof(*sobel_x));
     double* sobel_y = calloc(grayscale.width * grayscale.height, sizeof(*sobel_y));
-    get_sobel(&grayscale, sobel_x, sobel_y);
+    if (!sobel_x || !sobel_y)
+        fprintf(stderr, "Error: Failed to allocate memory for edge detection!\n");
+
+    if (edge_threshold < 4.0)
+        get_sobel(&grayscale, sobel_x, sobel_y);
 
     for (size_t y = 0; y < image->height; y++) {
         for (size_t x = 0; x < image->width; x++) {
@@ -173,6 +178,7 @@ void print_image(image_t* image, double edge_threshold) {
         printf("\n");
     }
 
+    printf("%s", RESET);
     free(sobel_x);
     free(sobel_y);
 }
