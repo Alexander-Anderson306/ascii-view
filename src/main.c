@@ -18,9 +18,10 @@ int main(int argc, char* argv[]) {
 
     // Resizes image
     image_t resized = make_resized(&original, args.max_width, args.max_height, args.character_ratio);
-    if (!resized.data)
+    if (!resized.data) {
         free_image(&original);
         return 1;
+    }
     
     print_image(&resized, args.edge_threshold);
     
