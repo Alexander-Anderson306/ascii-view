@@ -7,7 +7,7 @@ A command-line tool that displays images as colorized ASCII art in the terminal.
 ## Features
 - **Multi-format support**: Supports JPEG, PNG, BMP, and other common image formats via [stb_image](https://github.com/nothings/stb)
 - **Color terminal output**: Uses ANSI color codes for colors
-- **Intelligent resizing**: Scales images to fit constrained dimensions while maintaining aspect ratio
+- **Intelligent resizing**: Scales images to fit the terminal's constrained dimensions while maintaining aspect ratio
 - **Terminal-optimized**: Adjusts for typical terminal font aspect ratios (characters are taller than they are wide)
 - **Edge enhancement**: Uses Sobel filtering to enhance edges
 
@@ -39,8 +39,8 @@ Requirements:
 
 ### Options
 
-- `-mw <width>`: Maximum width in characters (default: 64)
-- `-mh <height>`: Maximum height in characters (default: 48)
+- `-mw <width>`: Maximum width in characters (default: terminal width OR 64)
+- `-mh <height>`: Maximum height in characters (default: terminal height OR 48)
 - `-et <threshold>`: Edge detection threshold, range: 0.0 - 4.0 (default 4.0, disabled)
 - `-cr <ratio>`: Height-to-width ratio for characters (default 2.0)
 
