@@ -128,7 +128,7 @@ char get_sobel_angle_char(double sobel_angle) {
 }
 
 
-void print_image(image_t* image) {
+void print_image(image_t* image, double edge_threshold) {
     image_t grayscale = make_grayscale(image);
     double* sobel_x = calloc(grayscale.width * grayscale.height, sizeof(*sobel_x));
     double* sobel_y = calloc(grayscale.width * grayscale.height, sizeof(*sobel_y));
@@ -164,7 +164,7 @@ void print_image(image_t* image) {
             ascii_char = get_ascii_char(grayscale);
 
             // If edge
-            if (square_sobel_magnitude >= 1.5 * 1.5)
+            if (square_sobel_magnitude >= edge_threshold * edge_threshold)
                 ascii_char = get_sobel_angle_char(sobel_angle);
             
             printf("%s", color);
