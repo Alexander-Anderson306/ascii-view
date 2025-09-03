@@ -1,5 +1,6 @@
 #ifndef MY_IMAGE_LIB
 #define MY_IMAGE_LIB
+#include <stdlib.h>
 
 typedef struct {
     size_t width;

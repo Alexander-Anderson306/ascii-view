@@ -7,8 +7,6 @@
 #include "../include/image.h"
 
 
-
-
 image_t load_image(const char* file_path) {
     int width, height, channels;
     unsigned char* raw_data = stbi_load(file_path, &width, &height, &channels, 0);
@@ -72,7 +70,7 @@ void get_average(image_t* image, double* average, size_t x1, size_t x2, size_t y
     for (size_t c = 0; c < image->channels; c++) {
         average[c] = 0.0;
     }
-    
+
     // Get total
     for (size_t y = y1; y < y2; y++) {
         for (size_t x = x1; x < x2; x++) {
@@ -117,7 +115,7 @@ image_t make_resized(image_t* original, size_t max_width, size_t max_height, dou
         for (size_t i = 0; i < width; i++) {
             size_t x1 = (i * original->width) / (width);
             size_t x2 = ((i + 1) * original->width) / (width);
-        
+
             get_average(original, &data[(i + j * width) * channels], x1, x2, y1, y2);
         }
     }
@@ -153,7 +151,7 @@ image_t make_grayscale(image_t* original) {
     for (size_t y = 0; y < height; y++) {
         for (size_t x = 0; x < width; x++) {
             double* pixel = get_pixel(original, x, y);
-            
+
             // Luminance-weighted graycsale. Could be a callback...
             double grayscale = 0.2126 * pixel[0] + 0.7152 * pixel[1] + 0.0722 * pixel[2];
 
