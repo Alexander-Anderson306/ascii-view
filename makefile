@@ -4,10 +4,10 @@ LDFLAGS = -lm
 SRCDIR = src
 SOURCES = $(wildcard $(SRCDIR)/*.c)
 OBJECTS = $(SOURCES:.c=.o)
-TARGET = ascii-view.x
+TARGET = ascii-view
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $(TARGET)
+	$(CC) $(OBJECTS)  $(LDFLAGS)  -o $(TARGET)
 
 # Release build with optimization
 release: CFLAGS += -O3 -flto -march=native
