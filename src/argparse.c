@@ -23,6 +23,7 @@ void print_help(char* exec_alias) {
     printf("\t-mh <height>\t\tMaximum height in characters (default: terminal height OR %d)\n", DEFAULT_MAX_HEIGHT);
     printf("\t-et <threshold>\t\tEdge detection threshold, range: 0.0 - 4.0 (default: %.1f, disabled)\n", DEFAULT_EDGE_THRESHOLD);
     printf("\t-cr <ratio>\t\tHeight-to-width ratio for characters (default: %.1f)\n", DEFAULT_CHARACTER_RATIO);
+    printf("\t--retro-colors\t\tUse 3-bit retro color palette (8 colors) instead of 24-bit truecolor\n");
 }
 
 
@@ -52,6 +53,7 @@ args_t parse_args(int argc, char* argv[]) {
         .max_height = DEFAULT_MAX_HEIGHT,
         .character_ratio = DEFAULT_CHARACTER_RATIO,
         .edge_threshold = DEFAULT_EDGE_THRESHOLD,
+        .use_retro_colors = 0,
     };
 
     try_get_terminal_size(&args.max_width, &args.max_height);
@@ -80,6 +82,8 @@ args_t parse_args(int argc, char* argv[]) {
             args.edge_threshold = atof(argv[++i]);
         else if (!strcmp(argv[i], "-cr"))
             args.character_ratio = atof(argv[++i]);
+        else if (!strcmp(argv[i], "--retro-colors"))
+            args.use_retro_colors = 1;
     }
 
     return args;

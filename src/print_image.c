@@ -72,9 +72,47 @@ hsv_t rgb_to_hsv(double red, double green, double blue) {
 }
 
 
-char* get_color_code(const hsv_t* hsv) {
-    // This function is no longer used with truecolor
-    return NULL;
+void hsv_to_rgb(const hsv_t* hsv, double* r, double* g, double* b) {
+    double c = hsv->value * hsv->saturation;
+    double h_prime = hsv->hue / 60.0;
+    double x = c * (1.0 - fabs(fmod(h_prime, 2.0) - 1.0));
+    
+    double r1, g1, b1;
+    
+    if (h_prime >= 0.0 && h_prime < 1.0) {
+        r1 = c; g1 = x; b1 = 0.0;
+    } else if (h_prime >= 1.0 && h_prime < 2.0) {
+        r1 = x; g1 = c; b1 = 0.0;
+    } else if (h_prime >= 2.0 && h_prime < 3.0) {
+        r1 = 0.0; g1 = c; b1 = x;
+    } else if (h_prime >= 3.0 && h_prime < 4.0) {
+        r1 = 0.0; g1 = x; b1 = c;
+    } else if (h_prime >= 4.0 && h_prime < 5.0) {
+        r1 = x; g1 = 0.0; b1 = c;
+    } else {
+        r1 = c; g1 = 0.0; b1 = x;
+    }
+    
+    double m = hsv->value - c;
+    *r = r1 + m;
+    *g = g1 + m;
+    *b = b1 + m;
+}
+
+
+void get_retro_rgb(const hsv_t* hsv, int* out_r, int* out_g, int* out_b) {
+    // For retro colors: set value to full brightness, then convert to RGB
+    // This way hue/saturation control color, but brightness is controlled by character
+    hsv_t bright_hsv = *hsv;
+    bright_hsv.value = 1.0;
+    
+    double r, g, b;
+    hsv_to_rgb(&bright_hsv, &r, &g, &b);
+    
+    // Round each component to 0 or 255 for 3-bit color (8 colors)
+    *out_r = (r > 0.5) ? 255 : 0;
+    *out_g = (g > 0.5) ? 255 : 0;
+    *out_b = (b > 0.5) ? 255 : 0;
 }
 
 
@@ -108,7 +146,7 @@ char get_sobel_angle_char(double sobel_angle) {
 }
 
 
-void print_image(image_t* image, double edge_threshold) {
+void print_image(image_t* image, double edge_threshold, int use_retro_colors) {
     image_t grayscale = make_grayscale(image);
     double* sobel_x = calloc(grayscale.width * grayscale.height, sizeof(*sobel_x));
     double* sobel_y = calloc(grayscale.width * grayscale.height, sizeof(*sobel_y));
@@ -144,10 +182,16 @@ void print_image(image_t* image, double edge_threshold) {
                 
                 grayscale = calculate_grayscale_from_hsv(&hsv);
                 
-                // Get actual RGB values from the image
-                r = (int)(pixel[0] * 255);
-                g = (int)(pixel[1] * 255);
-                b = (int)(pixel[2] * 255);
+                if (use_retro_colors) {
+                    // Retro mode: use hue/saturation from image, but full brightness
+                    // This makes character control brightness, color controls hue/saturation
+                    get_retro_rgb(&hsv, &r, &g, &b);
+                } else {
+                    // Truecolor mode: use actual RGB values from the image
+                    r = (int)(pixel[0] * 255);
+                    g = (int)(pixel[1] * 255);
+                    b = (int)(pixel[2] * 255);
+                }
             }
 
             ascii_char = get_ascii_char(grayscale);

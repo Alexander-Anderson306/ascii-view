@@ -9,6 +9,7 @@ typedef struct {
     size_t max_height;
     double character_ratio;
     double edge_threshold;
+    int use_retro_colors;
 } args_t;
 
 args_t parse_args(int argc, char* argv[]);
