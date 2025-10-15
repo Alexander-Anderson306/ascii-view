@@ -74,13 +74,13 @@ args_t parse_args(int argc, char* argv[]) {
 
     // Get optional parameters
     for (size_t i = 2; i < (size_t) argc; i++) {
-        if (!strcmp(argv[i], "-mw"))
+        if (!strcmp(argv[i], "-mw") && i + 1 < (size_t) argc)
             args.max_width = (size_t) atoi(argv[++i]);
-        else if (!strcmp(argv[i], "-mh"))
+        else if (!strcmp(argv[i], "-mh") && i + 1 < (size_t) argc)
             args.max_height = (size_t) atoi(argv[++i]);
-        else if (!strcmp(argv[i], "-et"))
+        else if (!strcmp(argv[i], "-et") && i + 1 < (size_t) argc)
             args.edge_threshold = atof(argv[++i]);
-        else if (!strcmp(argv[i], "-cr"))
+        else if (!strcmp(argv[i], "-cr") && i + 1 < (size_t) argc)
             args.character_ratio = atof(argv[++i]);
         else if (!strcmp(argv[i], "--retro-colors"))
             args.use_retro_colors = 1;

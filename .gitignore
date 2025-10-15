@@ -29,6 +29,7 @@
 *.dylib
 
 # Executables
+/ascii-view
 *.exe
 *.out
 *.x
