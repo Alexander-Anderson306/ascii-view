@@ -4,18 +4,15 @@
 
 #include "../include/image.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 // Characters to print
 #define VALUE_CHARS " .-=+*x#$&X@"
 #define N_VALUES (sizeof(VALUE_CHARS) - 1) // Exclude null
 
 // Color ANSI codes
-#define RED "\x1B[31m"
-#define GRN "\x1B[32m"
-#define YEL "\x1B[33m"
-#define BLU "\x1B[34m"
-#define MAG "\x1B[35m"
-#define CYN "\x1B[36m"
-#define WHT "\x1B[37m"
 #define RESET "\x1b[0m"
 
 
@@ -80,23 +77,8 @@ hsv_t rgb_to_hsv(double red, double green, double blue) {
 
 
 char* get_color_code(const hsv_t* hsv) {
-    if (hsv->saturation < 0.25) {
-        return WHT;
-    }
-    
-    if (hsv->hue >= 30.0 && hsv->hue < 90.0) {
-        return YEL;
-    } else if (hsv->hue >= 90.0 && hsv->hue < 150.0) {
-        return GRN;
-    } else if (hsv->hue >= 150.0 && hsv->hue < 210.0) {
-        return CYN;
-    } else if (hsv->hue >= 210.0 && hsv->hue < 270.0) {
-        return BLU;
-    } else if (hsv->hue >= 270.0 && hsv->hue < 330.0) {
-        return MAG;
-    } else {
-        return RED;
-    }
+    // This function is no longer used with truecolor
+    return NULL;
 }
 
 
@@ -152,19 +134,24 @@ void print_image(image_t* image, double edge_threshold) {
             double sobel_angle = atan2(sy, sx) * 180. / M_PI;
 
             char ascii_char;
-            char* color = WHT;
             
             double grayscale;
+            int r = 255, g = 255, b = 255; // Default white for grayscale
+            
             if (image->channels <= 2) {
                 // Grayscale image
                 grayscale = pixel[0];
-                color = WHT;
+                r = g = b = (int)(pixel[0] * 255);
             } else {
                 // RGB image
                 hsv_t hsv = rgb_to_hsv(pixel[0], pixel[1], pixel[2]);
                 
                 grayscale = calculate_grayscale_from_hsv(&hsv);
-                color = get_color_code(&hsv);
+                
+                // Get actual RGB values from the image
+                r = (int)(pixel[0] * 255);
+                g = (int)(pixel[1] * 255);
+                b = (int)(pixel[2] * 255);
             }
 
             ascii_char = get_ascii_char(grayscale);
@@ -173,8 +160,8 @@ void print_image(image_t* image, double edge_threshold) {
             if (square_sobel_magnitude >= edge_threshold * edge_threshold)
                 ascii_char = get_sobel_angle_char(sobel_angle);
             
-            printf("%s", color);
-            putchar(ascii_char);
+            // Use 24-bit truecolor ANSI escape code
+            printf("\x1b[38;2;%d;%d;%dm%c", r, g, b, ascii_char);
         }
         printf("\n");
     }
