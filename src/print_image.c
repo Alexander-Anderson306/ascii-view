@@ -4,10 +4,6 @@
 
 #include "../include/image.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 // Characters to print
 #define VALUE_CHARS " .-=+*x#$&X@"
 #define N_VALUES (sizeof(VALUE_CHARS) - 1) // Exclude null
