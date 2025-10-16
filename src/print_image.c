@@ -9,13 +9,6 @@
 #define N_VALUES (sizeof(VALUE_CHARS) - 1) // Exclude null
 
 // Color ANSI codes
-#define RED "\x1B[31m"
-#define GRN "\x1B[32m"
-#define YEL "\x1B[33m"
-#define BLU "\x1B[34m"
-#define MAG "\x1B[35m"
-#define CYN "\x1B[36m"
-#define WHT "\x1B[37m"
 #define RESET "\x1b[0m"
 
 
@@ -79,24 +72,59 @@ hsv_t rgb_to_hsv(double red, double green, double blue) {
 }
 
 
-char* get_color_code(const hsv_t* hsv) {
-    if (hsv->saturation < 0.25) {
-        return WHT;
+void hsv_to_rgb(const hsv_t* hsv, double* r, double* g, double* b) {
+    double c = hsv->value * hsv->saturation;
+    double h_prime = hsv->hue / 60.0;
+    double x = c * (1.0 - fabs(fmod(h_prime, 2.0) - 1.0));
+    
+    double r1, g1, b1;
+    
+    if (h_prime >= 0.0 && h_prime < 1.0) {
+        r1 = c; g1 = x; b1 = 0.0;
+    } else if (h_prime >= 1.0 && h_prime < 2.0) {
+        r1 = x; g1 = c; b1 = 0.0;
+    } else if (h_prime >= 2.0 && h_prime < 3.0) {
+        r1 = 0.0; g1 = c; b1 = x;
+    } else if (h_prime >= 3.0 && h_prime < 4.0) {
+        r1 = 0.0; g1 = x; b1 = c;
+    } else if (h_prime >= 4.0 && h_prime < 5.0) {
+        r1 = x; g1 = 0.0; b1 = c;
+    } else {
+        r1 = c; g1 = 0.0; b1 = x;
     }
     
-    if (hsv->hue >= 30.0 && hsv->hue < 90.0) {
-        return YEL;
-    } else if (hsv->hue >= 90.0 && hsv->hue < 150.0) {
-        return GRN;
-    } else if (hsv->hue >= 150.0 && hsv->hue < 210.0) {
-        return CYN;
-    } else if (hsv->hue >= 210.0 && hsv->hue < 270.0) {
-        return BLU;
-    } else if (hsv->hue >= 270.0 && hsv->hue < 330.0) {
-        return MAG;
-    } else {
-        return RED;
+    double m = hsv->value - c;
+    *r = r1 + m;
+    *g = g1 + m;
+    *b = b1 + m;
+}
+
+
+void get_retro_rgb(const hsv_t* hsv, int* out_r, int* out_g, int* out_b) {
+    // For retro colors: quantize hue and saturation for 8-color palette
+    hsv_t quantized_hsv = *hsv;
+    
+    // Set value to full brightness (character controls apparent brightness)
+    quantized_hsv.value = 1.0;
+    
+    // Quantize hue to nearest multiple of 60 degrees (6 hues: R, Y, G, C, B, M)
+    quantized_hsv.hue = round(quantized_hsv.hue / 60.0) * 60.0;
+    if (quantized_hsv.hue >= 360.0) {
+        quantized_hsv.hue = 0.0;
     }
+    
+    // Quantize saturation: either 0% (grayscale) or 100% (full color)
+    // Using 0.25 threshold as before
+    quantized_hsv.saturation = (quantized_hsv.saturation < 0.25) ? 0.0 : 1.0;
+    
+    // Convert back to RGB
+    double r, g, b;
+    hsv_to_rgb(&quantized_hsv, &r, &g, &b);
+    
+    // Convert to 0-255 range
+    *out_r = (int)(r * 255);
+    *out_g = (int)(g * 255);
+    *out_b = (int)(b * 255);
 }
 
 
@@ -130,7 +158,7 @@ char get_sobel_angle_char(double sobel_angle) {
 }
 
 
-void print_image(image_t* image, double edge_threshold) {
+void print_image(image_t* image, double edge_threshold, int use_retro_colors) {
     image_t grayscale = make_grayscale(image);
     double* sobel_x = calloc(grayscale.width * grayscale.height, sizeof(*sobel_x));
     double* sobel_y = calloc(grayscale.width * grayscale.height, sizeof(*sobel_y));
@@ -152,19 +180,35 @@ void print_image(image_t* image, double edge_threshold) {
             double sobel_angle = atan2(sy, sx) * 180. / M_PI;
 
             char ascii_char;
-            char* color = WHT;
             
             double grayscale;
+            int r = 255, g = 255, b = 255; // Default white for grayscale
+            
             if (image->channels <= 2) {
                 // Grayscale image
                 grayscale = pixel[0];
-                color = WHT;
+                r = g = b = (int)(pixel[0] * 255);
             } else {
                 // RGB image
                 hsv_t hsv = rgb_to_hsv(pixel[0], pixel[1], pixel[2]);
                 
                 grayscale = calculate_grayscale_from_hsv(&hsv);
-                color = get_color_code(&hsv);
+                
+                // Set value to full brightness for both modes
+                // Character choice controls apparent brightness, not color value
+                hsv.value = 1.0;
+                
+                if (use_retro_colors) {
+                    // Retro mode: quantize hue to 60° and saturation to 0% or 100%
+                    get_retro_rgb(&hsv, &r, &g, &b);
+                } else {
+                    // Truecolor mode: convert HSV back to RGB with full brightness
+                    double r_d, g_d, b_d;
+                    hsv_to_rgb(&hsv, &r_d, &g_d, &b_d);
+                    r = (int)(r_d * 255);
+                    g = (int)(g_d * 255);
+                    b = (int)(b_d * 255);
+                }
             }
 
             ascii_char = get_ascii_char(grayscale);
@@ -173,8 +217,8 @@ void print_image(image_t* image, double edge_threshold) {
             if (square_sobel_magnitude >= edge_threshold * edge_threshold)
                 ascii_char = get_sobel_angle_char(sobel_angle);
             
-            printf("%s", color);
-            putchar(ascii_char);
+            // Use 24-bit truecolor ANSI escape code
+            printf("\x1b[38;2;%d;%d;%dm%c", r, g, b, ascii_char);
         }
         printf("\n");
     }

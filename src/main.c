@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    print_image(&resized, args.edge_threshold);
+    print_image(&resized, args.edge_threshold, args.use_retro_colors);
     
     free_image(&original);
     free_image(&resized);
