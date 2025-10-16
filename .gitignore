@@ -58,6 +58,3 @@ dkms.conf
 
 # VSCode
 .vscode
-
-# the executable
-ascii-view
