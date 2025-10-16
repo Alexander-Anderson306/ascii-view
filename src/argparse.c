@@ -84,12 +84,8 @@ args_t parse_args(int argc, char* argv[]) {
             args.character_ratio = atof(argv[++i]);
         else if (!strcmp(argv[i], "--retro-colors"))
             args.use_retro_colors = 1;
-        else {
-            fprintf(stderr, "Error: Unknown argument '%s'\n", argv[i]);
-            print_help(argv[0]);
-            args.file_path = NULL;
-            return args;
-        }
+        else
+            fprintf(stderr, "Warning: Ignoring invalid or incomplete argument '%s'\n", argv[i]);
     }
 
     return args;
