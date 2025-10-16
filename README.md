@@ -43,6 +43,7 @@ Requirements:
 - `-mh <height>`: Maximum height in characters (default: terminal height OR 48)
 - `-et <threshold>`: Edge detection threshold, range: 0.0 - 4.0 (default 4.0, disabled)
 - `-cr <ratio>`: Height-to-width ratio for characters (default 2.0)
+- `--retro-colors`: Uses 3-bit colors for pixels.
 
 ### Examples
 
@@ -81,4 +82,4 @@ The images in the `examples` directory are via [Unsplash](https://unsplash.com)
 5. **ASCII mapping**: Maps brightness levels to ASCII characters: ` .-=+*x#$&X@`
 6. **Edge enhancement**: Finds edges and angles with a Sobel filter, enhances edges with `_/|\`
 
-[^1]: Some terminals support the ability to extract the exact font ratio, but others don't. For the time being we assume a 2:1 ratio.
+[^1]: Some terminals support the ability to extract the exact font ratio, but others don't. For the time being we assume a 2:1 ratio, with ability to change it through the `-cr` option.
