@@ -101,18 +101,30 @@ void hsv_to_rgb(const hsv_t* hsv, double* r, double* g, double* b) {
 
 
 void get_retro_rgb(const hsv_t* hsv, int* out_r, int* out_g, int* out_b) {
-    // For retro colors: set value to full brightness, then convert to RGB
-    // This way hue/saturation control color, but brightness is controlled by character
-    hsv_t bright_hsv = *hsv;
-    bright_hsv.value = 1.0;
+    // For retro colors: quantize hue and saturation for 8-color palette
+    hsv_t quantized_hsv = *hsv;
     
+    // Set value to full brightness (character controls apparent brightness)
+    quantized_hsv.value = 1.0;
+    
+    // Quantize hue to nearest multiple of 60 degrees (6 hues: R, Y, G, C, B, M)
+    quantized_hsv.hue = round(quantized_hsv.hue / 60.0) * 60.0;
+    if (quantized_hsv.hue >= 360.0) {
+        quantized_hsv.hue = 0.0;
+    }
+    
+    // Quantize saturation: either 0% (grayscale) or 100% (full color)
+    // Using 0.25 threshold as before
+    quantized_hsv.saturation = (quantized_hsv.saturation < 0.25) ? 0.0 : 1.0;
+    
+    // Convert back to RGB
     double r, g, b;
-    hsv_to_rgb(&bright_hsv, &r, &g, &b);
+    hsv_to_rgb(&quantized_hsv, &r, &g, &b);
     
-    // Round each component to 0 or 255 for 3-bit color (8 colors)
-    *out_r = (r > 0.5) ? 255 : 0;
-    *out_g = (g > 0.5) ? 255 : 0;
-    *out_b = (b > 0.5) ? 255 : 0;
+    // Convert to 0-255 range
+    *out_r = (int)(r * 255);
+    *out_g = (int)(g * 255);
+    *out_b = (int)(b * 255);
 }
 
 
@@ -182,15 +194,20 @@ void print_image(image_t* image, double edge_threshold, int use_retro_colors) {
                 
                 grayscale = calculate_grayscale_from_hsv(&hsv);
                 
+                // Set value to full brightness for both modes
+                // Character choice controls apparent brightness, not color value
+                hsv.value = 1.0;
+                
                 if (use_retro_colors) {
-                    // Retro mode: use hue/saturation from image, but full brightness
-                    // This makes character control brightness, color controls hue/saturation
+                    // Retro mode: quantize hue to 60° and saturation to 0% or 100%
                     get_retro_rgb(&hsv, &r, &g, &b);
                 } else {
-                    // Truecolor mode: use actual RGB values from the image
-                    r = (int)(pixel[0] * 255);
-                    g = (int)(pixel[1] * 255);
-                    b = (int)(pixel[2] * 255);
+                    // Truecolor mode: convert HSV back to RGB with full brightness
+                    double r_d, g_d, b_d;
+                    hsv_to_rgb(&hsv, &r_d, &g_d, &b_d);
+                    r = (int)(r_d * 255);
+                    g = (int)(g_d * 255);
+                    b = (int)(b_d * 255);
                 }
             }
 
