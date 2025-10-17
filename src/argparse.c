@@ -37,10 +37,10 @@ void print_help(char* exec_alias) {
 int try_get_terminal_size(size_t* width, size_t* height) {
 #ifdef _WIN32
 // Windows implementation
-    if (!_isatty(0)) 
+    if (!_isatty(0))
         return 0;
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (hConsole == INVALID_HANDLE_VALUE) 
+    if (hConsole == INVALID_HANDLE_VALUE)
         return 0;
 
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -51,13 +51,13 @@ int try_get_terminal_size(size_t* width, size_t* height) {
     *height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 #else
 // POSIX implementation
-    if (!isatty(0)) 
+    if (!isatty(0))
         return 0;
     struct winsize ws;
 
     if (ioctl(0, TIOCGWINSZ, &ws) == 0) {
-        *width = (size_t)ws.ws_col;
-        *height = (size_t)ws.ws_row;
+        *width = (size_t) ws.ws_col;
+        *height = (size_t) ws.ws_row;
         return 1;
     }
 #endif
