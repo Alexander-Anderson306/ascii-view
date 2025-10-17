@@ -1,9 +1,16 @@
 #include <stdio.h>
 #include <string.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#else
+#include <sys/ioctl.h>
+#endif
+
+#include <unistd.h>
 #include "../include/argparse.h"
+
 
 #define DEFAULT_MAX_WIDTH 64
 #define DEFAULT_MAX_HEIGHT 48
@@ -26,21 +33,34 @@ void print_help(char* exec_alias) {
     printf("\t--retro-colors\t\tUse 3-bit retro color palette (8 colors) instead of 24-bit truecolor\n");
 }
 
-
 // Get size of terminal in characters. Returns 1 if successful.
 int try_get_terminal_size(size_t* width, size_t* height) {
-    struct winsize ws;
+#ifdef _WIN32
+// Windows implementation
+    if (!_isatty(0))
+        return 0;
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hConsole == INVALID_HANDLE_VALUE)
+        return 0;
 
-    // Abort if not terminal
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi))
+        return 0;
+
+    *width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    *height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+#else
+// POSIX implementation
     if (!isatty(0))
         return 0;
-    
+    struct winsize ws;
+
     if (ioctl(0, TIOCGWINSZ, &ws) == 0) {
         *width = (size_t) ws.ws_col;
         *height = (size_t) ws.ws_row;
         return 1;
     }
-
+#endif
     return 0;
 }
 
