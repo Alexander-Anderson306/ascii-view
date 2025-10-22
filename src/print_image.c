@@ -3,9 +3,11 @@
 #include <math.h>
 #ifdef _WIN32
     #include <windows.h>
+    #include <conio.h>
     #define s_sleep(x) Sleep(x * 1000)
 #else
     #include <unistd.h>
+    #include <termios.h>
     #define s_sleep(x) usleep(x * 1000)
 #endif
 
@@ -19,6 +21,33 @@
 
 // Color ANSI codes
 #define RESET "\x1b[0m"
+
+#ifndef _WIN32
+    //these functions are used to allow for non blocking scan (used for quiting rainbow mode)
+    static struct termios original_settings;
+    void set_raw_mode(void) {
+        struct termios new_settings;
+        //backup current terminal settings
+        tcgetattr(STDIN_FILENO, &original_settings);
+        new_settings = original_settings;
+    
+        //disable ICANON (ui now processes by character not by line)
+        //disable ECHO (user input not echoed to terminal)
+        new_settings.c_lflag &= ~(ICANON | ECHO); 
+        //minimum num characters needed before read() returns is set to 0
+        new_settings.c_cc[VMIN] = 0;
+        //maximum num characters needed before read() returns is set to 0
+        new_settings.c_cc[VTIME] = 0; 
+    
+        tcsetattr(STDIN_FILENO, TCSANOW, &new_settings);
+    }
+
+    //restore terminal to original settings
+    void restore_mode(void) {
+        tcsetattr(STDIN_FILENO, TCSANOW, &original_settings);
+    }
+
+#endif
 
 
 double* get_max(double* a, double* b, double* c) {
@@ -244,7 +273,11 @@ void print_rainbow_image(image_t* image, double edge_threshold, int use_retro_co
     //get the regular ascii and hsv values
     get_ascii_and_color(ascii, hsvs, image, edge_threshold, use_retro_colors);
 
+    #ifndef _WIN32
+        set_raw_mode();
+    #endif
 
+    char key_press = 0;
     //loop until killed by terminal
     while(true) {
         //now print the image with correct colors
@@ -290,11 +323,30 @@ void print_rainbow_image(image_t* image, double edge_threshold, int use_retro_co
         } else {
             s_sleep(50);
         }
+
+        if (read(STDIN_FILENO, &key_press, 1) > 0) {
+            if (key_press == 'q' || key_press == 'Q') {
+                break; // Exit the loop
+            }
+        }
+        
     }
 
-    //incase we get here, free memory
+    #ifdef _WIN32
+        if (_kbhit()) {
+            char KEY_PRESS = _getch();
+            
+            if (KEY_PRESS == 'q' || KEY_PRESS == 'Q') {
+                break;
+            }
+        }
+    #else
+        restore_mode();
+    #endif
     free(ascii);
     free(hsvs);
+    //clear the terminal
+    printf("\x1b[2J");
 }
 
 void get_ascii_and_color(char* ascii_dest, hsv_t* hsv_dest, image_t* image, double edge_threshold, int use_retro_colors) {
@@ -337,7 +389,7 @@ void get_ascii_and_color(char* ascii_dest, hsv_t* hsv_dest, image_t* image, doub
                     get_retro_rgb(&hsv, &r, &g, &b);
                     hsv = rgb_to_hsv(r, g, b);
                 }
-                
+
                 hsv.value = 1.0;
                 hsv_dest[index] = hsv;
             }

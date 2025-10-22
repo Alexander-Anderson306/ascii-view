@@ -31,7 +31,7 @@ void print_help(char* exec_alias) {
     printf("\t-et <threshold>\t\tEdge detection threshold, range: 0.0 - 4.0 (default: %.1f, disabled)\n", DEFAULT_EDGE_THRESHOLD);
     printf("\t-cr <ratio>\t\tHeight-to-width ratio for characters (default: %.1f)\n", DEFAULT_CHARACTER_RATIO);
     printf("\t--retro-colors\t\tUse 3-bit retro color palette (8 colors) instead of 24-bit truecolor\n");
-    printf("\t-r\t\t\tAnimate ascii art with rainbow by shifting colors\n");
+    printf("\t-r\t\t\tAnimate ascii art with rainbow by shifting colors (q or Q to quit)\n");
 }
 
 // Get size of terminal in characters. Returns 1 if successful.
