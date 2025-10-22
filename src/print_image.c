@@ -1,22 +1,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#ifdef _WIN32
+    #include <windows.h>
+    #define s_sleep(x) Sleep(x * 1000)
+#else
+    #include <unistd.h>
+    #define s_sleep(x) usleep(x * 1000)
+#endif
 
 #include "../include/image.h"
+#include "../include/print_image.h"
 
 // Characters to print
 #define VALUE_CHARS " .-=+*x#$&X@"
 #define N_VALUES (sizeof(VALUE_CHARS) - 1) // Exclude null
+#define SLEEP_TIME 0.1
 
 // Color ANSI codes
 #define RESET "\x1b[0m"
-
-
-typedef struct {
-    double hue;
-    double saturation;
-    double value;
-} hsv_t;
 
 
 double* get_max(double* a, double* b, double* c) {
@@ -224,6 +226,118 @@ void print_image(image_t* image, double edge_threshold, int use_retro_colors) {
     }
 
     printf("%s", RESET);
+    
+    free(sobel_x);
+    free(sobel_y);
+    free_image(&grayscale);
+}
+
+void print_rainbow_image(image_t* image, double edge_threshold, int use_retro_colors) {
+    char true = 1;
+    char* ascii = (char*)malloc(sizeof(char) * image->height * image->width);
+    hsv_t* hsvs = (hsv_t*)malloc(sizeof(hsv_t) * image->height * image->width);
+
+    if (!ascii || !hsvs)
+        fprintf(stderr, "Error: Failed to allocate memory for edge detection!\n");
+
+
+    //get the regular ascii and hsv values
+    get_ascii_and_color(ascii, hsvs, image, edge_threshold, use_retro_colors);
+
+
+    //loop until killed by terminal
+    while(true) {
+        //now print the image with correct colors
+        for (size_t y = 0; y < image->height; y++) {
+            for(size_t x = 0; x < image->width; x++) {
+                //get the ascii character and hsv value
+                hsv_t hsv = hsvs[y * image->width + x];
+
+                double r_d, g_d, b_d;
+                hsv_to_rgb(&hsv, &r_d, &g_d, &b_d);
+
+                //get the rgb values and ascii character
+                int r = (int)(r_d * 255);
+                int g = (int)(g_d * 255);
+                int b = (int)(b_d * 255);
+                char ascii_char = ascii[y * image->width + x];
+
+                //print the character
+                printf("\x1b[38;2;%d;%d;%dm%c", r, g, b, ascii_char);
+
+                //now peform a hue rotation on the hsv value and store it for next time
+                hsv.hue += 2.0;
+                if (hsv.hue >= 360.0)
+                    hsv.hue -= 360.0;
+                
+                hsvs[y * image->width + x] = hsv;
+
+            }
+            printf("\n");
+        }
+        printf("\x1b[%luA", image->height+1);
+        s_sleep(50);
+    }
+
+    //incase we get here, free memory
+    free(ascii);
+    free(hsvs);
+}
+
+void get_ascii_and_color(char* ascii_dest, hsv_t* hsv_dest, image_t* image, double edge_threshold, int use_retro_colors) {
+    image_t grayscale = make_grayscale(image);
+    double* sobel_x = calloc(grayscale.width * grayscale.height, sizeof(*sobel_x));
+    double* sobel_y = calloc(grayscale.width * grayscale.height, sizeof(*sobel_y));
+    if (!sobel_x || !sobel_y)
+        fprintf(stderr, "Error: Failed to allocate memory for edge detection!\n");
+
+    if (edge_threshold < 4.0)
+        get_sobel(&grayscale, sobel_x, sobel_y);
+
+    for (size_t y = 0; y < image->height; y++) {
+        for (size_t x = 0; x < image->width; x++) {
+            double* pixel = get_pixel(image, x, y);
+
+            size_t index = y * image->width + x;
+            double sx = sobel_x[index];
+            double sy = sobel_y[index];
+
+            double square_sobel_magnitude = sx * sx + sy * sy;
+            double sobel_angle = atan2(sy, sx) * 180. / M_PI;
+
+            char ascii_char;
+            
+            double grayscale;
+            
+            if (image->channels <= 2) {
+                // Grayscale image
+                grayscale = pixel[0];
+            } else {
+                // RGB image
+                hsv_t hsv = rgb_to_hsv(pixel[0], pixel[1], pixel[2]);
+                
+                grayscale = calculate_grayscale_from_hsv(&hsv);
+                hsv.value = 1.0;
+
+                if (use_retro_colors) {
+                    // Retro mode: quantize hue to 60° and saturation to 0% or 100%
+                    int r, g, b = 255;
+                    get_retro_rgb(&hsv, &r, &g, &b);
+                    hsv = rgb_to_hsv(r, g, b);
+                }
+
+                hsv_dest[index] = hsv;
+            }
+
+            ascii_char = get_ascii_char(grayscale);
+
+            // If edge
+            if (square_sobel_magnitude >= edge_threshold * edge_threshold)
+                ascii_char = get_sobel_angle_char(sobel_angle);
+            
+            ascii_dest[index] = ascii_char;
+        }
+    }
     
     free(sobel_x);
     free(sobel_y);
