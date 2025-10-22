@@ -266,17 +266,30 @@ void print_rainbow_image(image_t* image, double edge_threshold, int use_retro_co
                 printf("\x1b[38;2;%d;%d;%dm%c", r, g, b, ascii_char);
 
                 //now peform a hue rotation on the hsv value and store it for next time
-                hsv.hue += 2.0;
-                if (hsv.hue >= 360.0)
-                    hsv.hue -= 360.0;
+                if(use_retro_colors) {
+                    hsv.hue += 20.0;
+                    if (hsv.hue >= 60.0)
+                        hsv.hue -= 60.0;
+                    
+                    hsvs[y * image->width + x] = hsv;
+                    
+                } else {
+                    hsv.hue += 2.0;
+                    if (hsv.hue >= 360.0)
+                        hsv.hue -= 360.0;
                 
-                hsvs[y * image->width + x] = hsv;
+                    hsvs[y * image->width + x] = hsv;
+                }
 
             }
             printf("\n");
         }
         printf("\x1b[%luA", image->height+1);
-        s_sleep(50);
+        if(use_retro_colors) {
+            s_sleep(1000);
+        } else {
+            s_sleep(50);
+        }
     }
 
     //incase we get here, free memory
@@ -317,7 +330,6 @@ void get_ascii_and_color(char* ascii_dest, hsv_t* hsv_dest, image_t* image, doub
                 hsv_t hsv = rgb_to_hsv(pixel[0], pixel[1], pixel[2]);
                 
                 grayscale = calculate_grayscale_from_hsv(&hsv);
-                hsv.value = 1.0;
 
                 if (use_retro_colors) {
                     // Retro mode: quantize hue to 60° and saturation to 0% or 100%
@@ -325,7 +337,8 @@ void get_ascii_and_color(char* ascii_dest, hsv_t* hsv_dest, image_t* image, doub
                     get_retro_rgb(&hsv, &r, &g, &b);
                     hsv = rgb_to_hsv(r, g, b);
                 }
-
+                
+                hsv.value = 1.0;
                 hsv_dest[index] = hsv;
             }
 
