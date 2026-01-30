@@ -106,7 +106,7 @@ args_t parse_args(int argc, char* argv[]) {
             args.character_ratio = atof(argv[++i]);
         else if (!strcmp(argv[i], "--retro-colors"))
             args.use_retro_colors = 1;
-        else if (!strcmp(argv[i], "-r"))
+        else if (!strcmp(argv[i], "--rainbow"))
             args.use_rainbow_colors = 1;
         else
             fprintf(stderr, "Warning: Ignoring invalid or incomplete argument '%s'\n", argv[i]);

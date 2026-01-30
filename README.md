@@ -48,7 +48,7 @@ Requirements:
 - `-et <threshold>`: Edge detection threshold, range: 0.0 - 4.0 (default 4.0, disabled)
 - `-cr <ratio>`: Height-to-width ratio for characters (default 2.0)
 - `--retro-colors`: Uses 3-bit colors for pixels.
-- `-r`: Animates ascii image with by hueshifting colors
+- `--rainbow`: Animates ascii image with by hueshifting colors
 
 ### Examples
 
